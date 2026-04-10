@@ -1,0 +1,58 @@
+{
+  "domain": "Vinlex - chatbot tra cuu chinh sach VinUni cho sinh vien",
+  "documents": [
+    {
+      "id": "data1",
+      "filename": "data1.md",
+      "title": "Sexual Misconduct and Response Guideline",
+      "reference_number": "VUNI.40",
+      "language": "en",
+      "category": "student_safety_policy",
+      "doc_type": "guideline",
+      "audience": "students_and_staff",
+      "level": "university_wide",
+      "source_type": "official_policy",
+      "effective_date": "2023-06-19"
+    },
+    {
+      "id": "data2",
+      "filename": "data2.md",
+      "title": "Quy che dao tao dai hoc he chinh quy theo he thong tin chi",
+      "reference_number": "VU_HT03.VN",
+      "language": "vi",
+      "category": "undergraduate_academic_policy",
+      "doc_type": "regulation",
+      "audience": "undergraduate_students",
+      "level": "university_wide",
+      "source_type": "official_regulation",
+      "effective_date": "2024-10-30"
+    },
+    {
+      "id": "data3",
+      "filename": "data3.md",
+      "title": "Quy che dao tao trinh do thac si",
+      "reference_number": "VU_HT02.VN",
+      "language": "vi",
+      "category": "graduate_academic_policy",
+      "doc_type": "regulation",
+      "audience": "graduate_students",
+      "level": "university_wide",
+      "source_type": "official_regulation",
+      "effective_date": "2022-12-20"
+    },
+    {
+      "id": "data4",
+      "filename": "data4.md",
+      "title": "Student Grade Appeal Procedure",
+      "reference_number": "PRC-AQA-002-V2.0",
+      "language": "en",
+      "category": "grading_and_appeals",
+      "doc_type": "procedure",
+      "audience": "students",
+      "level": "university_wide",
+      "source_type": "official_procedure",
+      "effective_date": "2026-01-21"
+    }
+    
+  ]
+}

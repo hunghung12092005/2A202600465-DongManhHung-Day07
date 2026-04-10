@@ -7,6 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from src.agent import KnowledgeBaseAgent
+from src.chunking import RecursiveChunker
 from src.embeddings import (
     EMBEDDING_PROVIDER_ENV,
     LOCAL_EMBEDDING_MODEL,
@@ -19,13 +20,13 @@ from src.models import Document
 from src.store import EmbeddingStore
 
 SAMPLE_FILES = [
-    "data/python_intro.txt",
-    "data/vector_store_notes.md",
-    "data/rag_system_design.md",
-    "data/customer_support_playbook.txt",
-    "data/chunking_experiment_report.md",
-    "data/vi_retrieval_notes.md",
+    "data/data1.md",
+    "data/data2.md",
+    "data/data3.md",
+    "data/data4.md",
+    "data/data5.md",
 ]
+DEFAULT_CHUNK_SIZE = 3000
 
 
 def load_documents_from_files(file_paths: list[str]) -> list[Document]:
@@ -56,6 +57,33 @@ def load_documents_from_files(file_paths: list[str]) -> list[Document]:
     return documents
 
 
+def chunk_documents(docs: list[Document], chunk_size: int = DEFAULT_CHUNK_SIZE) -> list[Document]:
+    """Split loaded documents into smaller chunks before embedding."""
+    chunker = RecursiveChunker(chunk_size=chunk_size)
+    chunked_documents: list[Document] = []
+
+    for doc in docs:
+        chunks = chunker.chunk(doc.content)
+        if not chunks:
+            continue
+
+        for index, chunk in enumerate(chunks, start=1):
+            chunked_documents.append(
+                Document(
+                    id=f"{doc.id}_chunk_{index}",
+                    content=chunk,
+                    metadata={
+                        **doc.metadata,
+                        "doc_id": doc.id,
+                        "chunk_index": index,
+                        "chunk_count": len(chunks),
+                    },
+                )
+            )
+
+    return chunked_documents
+
+
 def demo_llm(prompt: str) -> str:
     """A simple mock LLM for manual RAG testing."""
     preview = prompt[:400].replace("\n", " ")
@@ -79,9 +107,12 @@ def run_manual_demo(question: str | None = None, sample_files: list[str] | None 
         print("  python3 main.py")
         return 1
 
-    print(f"\nLoaded {len(docs)} documents")
+    print(f"\nLoaded {len(docs)} source documents")
     for doc in docs:
         print(f"  - {doc.id}: {doc.metadata['source']}")
+
+    chunked_docs = chunk_documents(docs)
+    print(f"\nPrepared {len(chunked_docs)} chunks for embedding")
 
     load_dotenv(override=False)
     provider = os.getenv(EMBEDDING_PROVIDER_ENV, "mock").strip().lower()
@@ -101,14 +132,18 @@ def run_manual_demo(question: str | None = None, sample_files: list[str] | None 
     print(f"\nEmbedding backend: {getattr(embedder, '_backend_name', embedder.__class__.__name__)}")
 
     store = EmbeddingStore(collection_name="manual_test_store", embedding_fn=embedder)
-    store.add_documents(docs)
+    store.add_documents(chunked_docs)
 
-    print(f"\nStored {store.get_collection_size()} documents in EmbeddingStore")
+    print(f"\nStored {store.get_collection_size()} chunks in EmbeddingStore")
     print("\n=== EmbeddingStore Search Test ===")
     print(f"Query: {query}")
     search_results = store.search(query, top_k=3)
     for index, result in enumerate(search_results, start=1):
-        print(f"{index}. score={result['score']:.3f} source={result['metadata'].get('source')}")
+        print(
+            f"{index}. score={result['score']:.3f} "
+            f"source={result['metadata'].get('source')} "
+            f"chunk={result['metadata'].get('chunk_index')}/{result['metadata'].get('chunk_count')}"
+        )
         print(f"   content preview: {result['content'][:120].replace(chr(10), ' ')}...")
 
     print("\n=== KnowledgeBaseAgent Test ===")
